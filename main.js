@@ -71,7 +71,13 @@ function download(){return new Promise(async resolve=>{
 function cmd(cmd,data){return new Promise(async resolve=>{
 	exec(cmd,(error,log)=>{resolve([error,log])});
 })}
-
+async function shutdown(){
+	console.log("shutdown...");
+	if(process.platform.startsWith("win")){	// win32; win64
+		await cmd("taskkill -f -im wscript.exe");
+		process.exit();
+	}
+}
 function playTrack(data){return new Promise(async resolve=>{
 	const {file}=data;
 
@@ -97,10 +103,17 @@ function playTrack(data){return new Promise(async resolve=>{
 	}
 })}
 
+//process.on('exit',shutdown);
+process.on('SIGINT',shutdown);
+process.on('SIGUSR1',shutdown);
+process.on('SIGUSR2',shutdown);
+
 (async ()=>{
 	download();
 	let track;
 	for(track of tracksToPlay){
+		console.log("playing",track);
 		await playTrack({file:track});
 	}
+	console.log("Vertig!")
 })();
