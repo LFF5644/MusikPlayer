@@ -1,15 +1,23 @@
-const fs=require("fs");
+const {
+	readFileSync,
+	writeFileSync,
+	readdirSync,
+}=require("fs");
 const fetch=require("node-fetch");
+const {
+	exec,
+}=require("child_process");
 
 const config_tracks="tracks.json";
-const cmd="mplayer [TRACK]";
+const config_playback="playback.json";
 const folderDownloads="downloads";
 
-const tracks=JSON.parse(fs.readFileSync(config_tracks,"utf-8"));
-const tracksToPlay=tracks.files;
+const tracks=JSON.parse(readFileSync(config_tracks,"utf-8"));
+const playback=JSON.parse(readFileSync(config_playback,"utf-8"));
+const tracksToPlay=[...tracks.files];	// Creates a new Object
 
 function download(){return new Promise(async resolve=>{
-	const downloadFileNames=fs.readdirSync(folderDownloads)
+	const downloadFileNames=readdirSync(folderDownloads)
 		.map(item=>[item,Buffer.from(item,"hex").toString("utf-8")])
 		.filter(item=>item[1]!="");
 
@@ -46,7 +54,7 @@ function download(){return new Promise(async resolve=>{
 			const fileName_hex=Buffer.from(fileName_utf8).toString("hex");
 			const filePath=folderDownloads+"/"+fileName_hex;
 
-			fs.writeFileSync(filePath,fileData);
+			writeFileSync(filePath,fileData);
 			tracksToPlay.push(filePath);
 		}
 		catch(e){
@@ -60,7 +68,39 @@ function download(){return new Promise(async resolve=>{
 	return;
 })}
 
+function cmd(cmd,data){return new Promise(async resolve=>{
+	exec(cmd,(error,log)=>{resolve([error,log])});
+})}
+
+function playTrack(data){return new Promise(async resolve=>{
+	const {file}=data;
+
+	if(process.platform.startsWith("win")){	// win32; win64
+		writeFileSync("_player.vbs",`\
+			Set Sound=CreateObject("WMPlayer.OCX.7")
+			Sound.URL="${file}"
+			Sound.Controls.play
+			do while Sound.currentmedia.duration=0
+			wscript.sleep 100
+			loop
+			wscript.sleep(int(Sound.currentmedia.duration)+1)*1000\
+		`.split("\t").join(""));
+		await cmd("start \"\" /wait _player.vbs");
+		writeFileSync("_player.vbs","");
+		resolve();
+		return;
+	}
+	else{
+		await cmd(`mplayer "${file}"`);
+		resolve();
+		return;
+	}
+})}
+
 (async ()=>{
-	await download();
-	console.log(tracksToPlay)
+	download();
+	let track;
+	for(track of tracksToPlay){
+		await playTrack({file:track});
+	}
 })();
