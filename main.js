@@ -2,6 +2,7 @@ const {
 	readFileSync,
 	writeFileSync,
 	readdirSync,
+	mkdirSync,
 }=require("fs");
 const fetch=require("node-fetch");
 const {
@@ -17,6 +18,8 @@ const playback=JSON.parse(readFileSync(config_playback,"utf-8"));
 const tracksToPlay=[...tracks.files];	// Creates a new Object
 
 function download(){return new Promise(async resolve=>{
+	try{mkdirSync(folderDownloads)}catch(e){} // if "catch" the folder allready exist!
+
 	const downloadFileNames=readdirSync(folderDownloads)
 		.map(item=>[item,Buffer.from(item,"hex").toString("utf-8")])
 		.filter(item=>item[1]!="");
