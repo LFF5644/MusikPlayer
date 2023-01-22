@@ -75,8 +75,11 @@ async function shutdown(){
 	console.log("shutdown...");
 	if(process.platform.startsWith("win")){	// win32; win64
 		await cmd("taskkill -f -im wscript.exe");
-		process.exit();
 	}
+	else{
+		await cmd("pkill mplayer");
+	}
+	process.exit();
 }
 function playTrack(data){return new Promise(async resolve=>{
 	const {file}=data;
