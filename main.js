@@ -31,7 +31,8 @@ function download(){return new Promise(async resolve=>{
 		resolve();
 		return;
 	}else{
-		console.log("Es müssen noch "+downloadRequired.length+" Songs herunter geladen werden ...\n");
+		const length=downloadRequired.length;
+		console.log(`Es ${length==1?"muss":"müssen"} noch ${length} ${length==1?"Song":"Songs"} herunter geladen werden ...\n`);
 	}
 	data="";
 	for(data of downloadRequired){
@@ -49,11 +50,12 @@ function download(){return new Promise(async resolve=>{
 			tracksToPlay.push(filePath);
 		}
 		catch(e){
-			console.log(`${fileName_utf8} konnte nicht heruntergeladen werden prüfen sie ihr verbindung!`);
+			console.log(`${fileName_utf8} konnte nicht heruntergeladen werden prüfen sie ihre verbindung!`);
 			continue;
 		}
+		console.log(`${fileName_utf8} wurde erfolgreich heruntergeladen und zur wiedergabe hinzugefügt!`);
 	}
-	console.log("Datei*en wurden heruntergeladen!");
+	console.log("Herunterladen wurde abgeschlossen!");
 	resolve();
 	return;
 })}
