@@ -121,5 +121,5 @@ process.on('SIGUSR2',shutdown);
 		console.log("playing",track);
 		await playTrack({file:track});
 	}
-	console.log("Vertig!")
+	console.log("Fertig!")
 })();
