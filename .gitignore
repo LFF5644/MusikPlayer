@@ -1,4 +1,8 @@
 node_modules
-tracks.json
 downloads
 _*
+
+tracks.json
+playback.json
+autoAddConfig.json
+
