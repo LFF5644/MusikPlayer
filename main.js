@@ -118,9 +118,11 @@ process.on('SIGUSR2',shutdown);
 (async ()=>{
 	download();
 	let track;
-	for(track of tracksToPlay){
-		console.log("playing",track);
-		await playTrack({file:track});
+	while(playback.repeat){
+		for(track of tracksToPlay){
+			console.log("playing",track);
+			await playTrack({file:track});
+		}
 	}
 	console.log("Fertig!")
 })();
