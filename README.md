@@ -1,7 +1,11 @@
 # Musik Player
 
-NodeJS is required!
-install nodejs on linux with `sudo apt install nodejs`
-on windows go to [NodeJS.org/DOWNLOAD](https://nodejs.org/de/download/)
+Linux
+- NodeJS: `sudo apt install nodejs`
+- MPlayer: `sudo apt install mplayer`
+- NPM `sudo apt install npm`
 
-if you have linux you need MPlayer simple install it with `sudo apt install mplayer`
+Windows
+- [NodeJS](https://nodejs.org/de/download)
+
+aufter the instalation type in the terminal `npm update` in the current dir!
