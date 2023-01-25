@@ -1,0 +1,8 @@
+{
+    "searchPath":"MUSIK",
+    "searchFolders":false,
+    "allowedTypes":[
+        "mp3",
+        "wav"
+    ]
+}
