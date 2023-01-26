@@ -19,7 +19,7 @@ const playback=JSON.parse(readFileSync(config_playback,"utf-8"));
 const tracksToPlay=[...tracks.files];	// Creates a new Object
 
 function download(){return new Promise(async resolve=>{
-	try{mkdirSync(folderDownloads)}catch(e){} // if "catch" the folder allready exist!
+	try{mkdirSync(folderDownloads)}catch(e){} // if "catch" the folder already exist!
 
 	const downloadFileNames=readdirSync(folderDownloads)
 		.map(item=>[item,Buffer.from(item,"hex").toString("utf-8")])
@@ -62,7 +62,7 @@ function download(){return new Promise(async resolve=>{
 			tracksToPlay.push(filePath);
 		}
 		catch(e){
-			console.log(`${fileName_utf8} konnte nicht heruntergeladen werden prüfen sie ihre verbindung!`);
+			console.log(`${fileName_utf8} konnte nicht heruntergeladen werden prüfen sie ihre Verbindung!`);
 			continue;
 		}
 		console.log(`${fileName_utf8} wurde erfolgreich heruntergeladen und zur wiedergabe hinzugefügt!`);
@@ -71,7 +71,6 @@ function download(){return new Promise(async resolve=>{
 	resolve();
 	return;
 })}
-
 function cmd(cmd,data){return new Promise(async resolve=>{
 	exec(cmd,(error,log)=>{resolve([error,log])});
 })}
@@ -110,7 +109,7 @@ function playTrack(data){return new Promise(async resolve=>{
 	}
 })}
 
-//process.on('exit',shutdown);
+process.on('exit',shutdown);
 process.on('SIGINT',shutdown);
 process.on('SIGUSR1',shutdown);
 process.on('SIGUSR2',shutdown);
