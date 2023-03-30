@@ -6,9 +6,7 @@ const {
 	mkdirSync,
 }=require("fs");
 const fetch=require("node-fetch");
-const {
-	exec,
-}=require("child_process");
+const child_process=require("child_process");
 
 const config_tracks="tracks.json";
 const config_playback="playback.json";
@@ -16,7 +14,8 @@ const folderDownloads="downloads";
 
 const tracks=JSON.parse(readFileSync(config_tracks,"utf-8"));
 const playback=JSON.parse(readFileSync(config_playback,"utf-8"));
-const tracksToPlay=[...tracks.files];	// Creates a new Object
+const canPlay=tracks.files;
+const tracksToPlay=canPlay;	// Creates a new Object
 
 function download(){return new Promise(async resolve=>{
 	try{mkdirSync(folderDownloads)}catch(e){} // if "catch" the folder already exist!
@@ -37,6 +36,7 @@ function download(){return new Promise(async resolve=>{
 		const downloaded=downloadFileNames.find(item=>item[1]==fileName_utf8);
 		if(!downloaded){continue;}
 		tracksToPlay.push(folderDownloads+"/"+downloaded[0]);
+		canPlay.push(folderDownloads+"/"+downloaded[0]);
 	}
 
 	if(downloadRequired.length==0){
@@ -60,6 +60,7 @@ function download(){return new Promise(async resolve=>{
 
 			writeFileSync(filePath,fileData);
 			tracksToPlay.push(filePath);
+			canPlay.push(filePath);
 		}
 		catch(e){
 			console.log(`${fileName_utf8} konnte nicht heruntergeladen werden prüfen sie ihre Verbindung!`);
@@ -72,7 +73,7 @@ function download(){return new Promise(async resolve=>{
 	return;
 })}
 function cmd(cmd,data){return new Promise(async resolve=>{
-	exec(cmd,(error,log)=>{resolve([error,log])});
+	child_process.exec(cmd,(error,log)=>{resolve([error,log])});
 })}
 async function shutdown(){
 	console.log("shutdown...");
