@@ -48,6 +48,7 @@ function download(){return new Promise(async resolve=>{
 		console.log(`${fileName_utf8} wird heruntergeladen...`);
 		try{
 			const header=await fetch(url);
+			//const contentType=header.headers.get("Content-Type");
 			const arrayBuffer=await header.arrayBuffer();
 
 			const fileData=Buffer.from(arrayBuffer);
