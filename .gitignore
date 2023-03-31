@@ -1,8 +1,12 @@
+# NPM
 node_modules
+package-lock.json
+
+# Cache
 downloads
 _*
 
+# Config
 tracks.json
 playback.json
 autoAddConfig.json
-
