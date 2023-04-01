@@ -17,6 +17,30 @@ const player=audioPlayerLib.createPlayer();
 function download(){return new Promise(async resolve=>{
 	try{mkdirSync(folderDownloads)}catch(e){} // if "catch" the folder already exist!
 
+	for(const url of tracks.maps){
+		let header,map;
+		try{
+			header=await fetch(url);
+		}
+		catch(e){
+			console.log(`${url} konnte nicht heruntergeladen werden prüfen sie ihre Verbindung!`);
+			continue;
+		}
+		try{
+			map=await header.json();
+		}
+		catch(e){
+			console.log(url+" ist keine json Datei");
+			continue;
+		}
+		const scope=map.path;
+		for(const file of map.files){
+			const url=scope+file;
+			tracks.urls.push(url);
+		}
+		console.log(`${url} wurde erfolgreich zur wiedergabe hinzugefügt darunter ${map.files.length} Songs!`);
+	}
+
 	const downloadFileNames=readdirSync(folderDownloads)
 		.map(item=>[item,Buffer.from(item,"hex").toString("utf-8")])
 		.filter(item=>item[1]!="");
@@ -27,8 +51,7 @@ function download(){return new Promise(async resolve=>{
 	const downloadRequired=fileUrls
 		.filter(item=>!downloadFileNames.some(i=>i[1]==item[0]));
 
-	let data;
-	for(data of fileUrls){
+	for(const data of fileUrls){
 		const [fileName_utf8,url]=data;
 		const downloaded=downloadFileNames.find(item=>item[1]==fileName_utf8);
 		if(!downloaded){continue;}
@@ -42,8 +65,8 @@ function download(){return new Promise(async resolve=>{
 		const length=downloadRequired.length;
 		console.log(`Es ${length==1?"muss":"müssen"} noch ${length} ${length==1?"Song":"Songs"} herunter geladen werden ...\n`);
 	}
-	data="";
-	for(data of downloadRequired){
+
+	for(const data of downloadRequired){
 		const [fileName_utf8,url]=data;
 		console.log(`${fileName_utf8} wird heruntergeladen...`);
 		try{
@@ -75,3 +98,20 @@ for(const track of tracks.files){
 	player.addTrack(track);
 }
 player.play();
+
+process.stdin.setRawMode(false);
+process.stdin.on("data",buffer=>{
+	const text=buffer.toString("utf-8").trim();
+	if(text==="skip"){
+		player.nextTrack();
+	}
+	else if(text==="pause"){
+		player.pause();
+	}
+	else if(text==="play"){
+		player.play();
+	}
+	else{
+		console.log(`falscher Befehl! ${text}`);
+	}
+});

@@ -1,4 +1,7 @@
 {
+	"maps":[
+		"http://192.168.178.48:5644/home/lff/cdrom.map"
+	],
 	"files": [
 		"MUSIK/Blah Blah Blah - Spotify.mp3",
 		"MUSIK/hollywood.mp3",
