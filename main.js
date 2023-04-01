@@ -102,16 +102,10 @@ player.play();
 process.stdin.setRawMode(false);
 process.stdin.on("data",buffer=>{
 	const text=buffer.toString("utf-8").trim();
-	if(text==="skip"){
-		player.nextTrack();
-	}
-	else if(text==="pause"){
-		player.pause();
-	}
-	else if(text==="play"){
-		player.play();
-	}
-	else{
-		console.log(`falscher Befehl! ${text}`);
-	}
+	if(text==="skip") player.nextTrack();
+	else if(text==="pause") player.pause();
+	else if(text==="play") player.play();
+	else if(text==="exit") process.exit();
+	else if(text==="") console.log("\n");
+	else console.log("Befehl nicht gefunden!");
 });
