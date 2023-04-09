@@ -1,11 +1,11 @@
 {
 	"dependencies": {
 		"audio-player-lib": "git+ssh://git@github.com:LFF5644/audioPlayerLib.git",
-		"node-fetch": "^2.6.9"
+		"socket-tcp": "git+ssh://git@github.com:LFF5644/socketTCP.git"
 	},
 	"name": "musik-player",
 	"description": "Linux - NodeJS: `sudo apt install nodejs` - MPlayer: `sudo apt install mplayer` - NPM `sudo apt install npm`",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"main": "main.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"

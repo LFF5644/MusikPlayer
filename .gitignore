@@ -4,9 +4,6 @@ package-lock.json
 
 # Cache
 downloads
-_*
 
 # Config
-tracks.json
-playback.json
-autoAddConfig.json
+config.json
