@@ -29,7 +29,7 @@ function createCache(entry){
 		.pop();
 	const fileTypeHex=Buffer.from(fileType,"utf-8").toString("hex");
 	const cachePath=cache_path+"/"+fileTypeHex;
-	const cacheFile=cachePath+"/"+pathHex+"_"+id;
+	const cacheFile=cachePath+"/"+pathHex.substring(0,5)+"_"+id+"_"+cacheIndex.length+1;
 	tryCreateDir(cachePath);
 	const cacheEntry={
 		cacheFile,
