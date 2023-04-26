@@ -22,7 +22,13 @@ function createCache(entry){
 	if(existCache(entry.path)) throw new Error("file '"+entry.path+"' already exists in cache!");
 	const id=entry.id?entry.id:Date.now();
 	const pathHex=Buffer.from(entry.path,"utf-8").toString("hex");
-	const cachePath=cache_path+"/"+pathHex.substring(0,5);
+	const fileType=entry.path
+		.split("/")
+		.pop()
+		.split(".")
+		.pop();
+	const fileTypeHex=Buffer.from(fileType,"utf-8").toString("hex");
+	const cachePath=cache_path+"/"+fileTypeHex;
 	const cacheFile=cachePath+"/"+pathHex+"_"+id;
 	tryCreateDir(cachePath);
 	const cacheEntry={
@@ -37,19 +43,15 @@ function createCache(entry){
 	fs.writeFileSync(cacheIndex_path,JSON.stringify(cacheIndex,null,4));
 	return cacheEntry;
 }
-function readCache(path){
-	if(!existCache(path)) throw new Error("cache don't exist!");
-	const entry=cacheIndex.find(item=>
-		item.path===path
-	);
-	return fs.readFileSync(entry.cacheFile);
-}
 function getCacheEntry(path){
 	if(!existCache(path)) throw new Error("cache don't exist!");
 	const entry=cacheIndex.find(item=>
 		item.path===path
 	);
-	return entry;
+	return{
+		...entry,
+		read:()=> fs.readFileSync(entry.cacheEntry),
+	};
 }
 function getFileName(path){
 	return path
@@ -120,7 +122,12 @@ getRemoteDirs:{
 				for(const file of files){
 					if(existCache(file)){
 						console.log(`load file ${file} form cache`);
-						player.addTrack(getCacheEntry(file).cacheFile);
+						const entry=getCacheEntry(file);
+
+						player.addTrack({
+							src: entry.cacheFile,
+							name: getFileName(entry.path),
+						});
 					}
 					else{
 						console.log(`load file ${file} ... from server`);
@@ -131,7 +138,10 @@ getRemoteDirs:{
 									buffer: data.buffer,
 								});
 								console.log(`loaded file ${file}`);
-								player.addTrack(entry.cacheFile);
+								player.addTrack({
+									src: entry.cacheFile,
+									name: getFileName(entry.path),
+								});
 							})
 							.catch(entry=>{
 								if(!entry.path||!entry.file){
@@ -144,6 +154,7 @@ getRemoteDirs:{
 				}
 			})
 	}
+	setTimeout(player.play,3e3);
 }
 
 process.stdin.on("data",data=>{
