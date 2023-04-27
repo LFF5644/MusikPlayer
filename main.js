@@ -149,6 +149,7 @@ getRemoteDirs:{
 									process.exit(1);
 								}
 								console.log(`cant get file ${entry.path}`);
+								process.exit(1);
 							});
 					}
 				}
