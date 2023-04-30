@@ -111,45 +111,67 @@ getRemoteDirs:{
 		config.socketTCP.host,
 		config.socketTCP.port
 	);
+	
+	if(!config.remoteMusicDirs) break getRemoteDirs;
+	console.log("load songs from remote ...");
+	
+	const promises=[];
 	let playerStarted=false;
+	let downloadCounter=0;
+	let downloadSuccessCounter=0;
+
 	for(const dir of config.remoteMusicDirs){
 		console.log(dir);
-		tcp.listFiles(
+		const promise=tcp.listFiles(
 			dir,
 			config.allowedFileTypes
-		)
-			.then(async files=>{
-				console.log(`get ${dir}: ${files.length} files found`);
-				for(const file of files){
-					if(existCache(file)){
-						console.log(`load file ${file} form cache`);
-						const entry=getCacheEntry(file);
+		);
+		promises.push(promise);
+		promise.then(async files=>{
+			console.log(`${files.length} files found in "${dir}"`);
+			const inCacheCounter=files.filter(item=>existCache(item)).length;
+			const downloadRequiredCounter=files.length-inCacheCounter;
+			downloadCounter+=downloadRequiredCounter;
 
-						player.addTrack({
-							src: entry.cacheFile,
-							name: getFileName(entry.path),
-						});
-					}
-					else{
-						console.log(`load file ${file} ... from server`);
-						const data=await tcp.getFile(file);
-						const entry=createCache({
-							path: data.path,
-							buffer: data.buffer,
-						});
-						console.log(`loaded file ${file}`);
-						player.addTrack({
-							src: entry.cacheFile,
-							name: getFileName(entry.path),
-						});
-					}
-					if(!playerStarted){
-						playerStarted=true;
-						player.play();
-					}
+			console.log(`${downloadRequiredCounter}/${files.length} files must download!`);
+			console.log(`${inCacheCounter}/${files.length} files cached\n`);
+
+			for(const file of files){
+				if(existCache(file)){
+					const entry=getCacheEntry(file);
+
+					player.addTrack({
+						src: entry.cacheFile,
+						name: getFileName(entry.path),
+					});
 				}
-			})
+				else{
+					const data=await tcp.getFile(file);
+					downloadSuccessCounter+=1;
+					const entry=createCache({
+						path: data.path,
+						buffer: data.buffer,
+					});
+					player.addTrack({
+						src: entry.cacheFile,
+						name: getFileName(entry.path),
+					});
+				}
+				if(!playerStarted){
+					playerStarted=true;
+					player.play();
+				}
+			}
+		});
 	}
+
+	const fn=()=>{
+		if(downloadCounter===0) return;
+		process.stdout.write(`\r${downloadSuccessCounter}/${downloadCounter} Wurden Heruntergeladen ...`);
+		if(downloadCounter!==downloadSuccessCounter) setTimeout(fn,500);
+		else console.log("\nDownloading Finished!\n");
+	};
+	Promise.all(promises).then(fn);
 }
 
 process.stdin.on("data",data=>{
