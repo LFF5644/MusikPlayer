@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 const fs=require("fs");
-const audioPlayerLib=require("audio-player-lib");    // https://github.com/LFF5644/audioPlayerLib
-const socketTCP_client=require("socket-tcp/client"); // https://github.com/LFF5644/socketTCP
+const audioPlayerLib=require("audio-player-lib");	// https://github.com/LFF5644/audioPlayerLib
+const socketTCP_client=require("socket-tcp/client");// https://github.com/LFF5644/socketTCP
+const directoryTools=require("directory-tools");	// https://github.com/LFF5644/directory-tools
 
 const config_path="config.json";
 const cache_path="cache";
@@ -90,7 +91,7 @@ readConf:{
 		);
 		process.exit(1);
 	}
-}
+};
 
 let cacheIndex;
 readCacheIndex:{
@@ -101,27 +102,74 @@ readCacheIndex:{
 		fs.writeFileSync(cacheIndex_path,"[]");
 		cacheIndex=[];
 	}
-}
+};
 
 const player=audioPlayerLib.createPlayer();
 
+getLocalFiles:{
+	let localFiles=[];
+	for(const file of config.localFiles?config.localFiles:[]){
+		try{
+			fs.lstatSync(file);
+		}catch(e){
+			console.log(`cant open file ${file}`);
+			continue;
+		}
+		localFiles.push(file);
+	}
+	for(const directory of config.localMusicDirs?config.localMusicDirs:[]){
+		const files=directoryTools.filterFiles(
+			directoryTools.getFiles(directory),
+			config.allowedFileTypes
+			?	config.allowedFileTypes
+			:	["mp3","wav"]
+		);
+		for(const file of files){
+			try{
+				fs.lstatSync(file);
+			}catch(e){
+				console.log(`cant open file ${file}`);
+				continue;
+			}
+			localFiles.push(file);
+		}
+		console.log(`found ${files.length} in ${directory}`);
+	}
+	console.log(`add ${localFiles.length} to playback`);
+	process.stdout.write("adding tracks 0/"+localFiles.length);
+	for(const index in localFiles){
+
+		player.addTrack({
+			name: getFileName(localFiles[index]),
+			src: localFiles[index],
+		});
+		process.stdout.write(`\radding tracks ${Number(index)+1}/${localFiles.length}`);
+	}
+	console.log("\nadded!\n");
+	if(localFiles.length>0) player.play();
+};
+
 let tcp;
 getRemoteDirs:{
+	if(
+		!config.socketTCP||
+		config.socketTCP.use===false||
+		!config.remoteMusicDirs
+	) break getRemoteDirs;
+	
+	console.log("load songs from remote ...");
 	tcp=socketTCP_client.createClient(
 		config.socketTCP.host,
 		config.socketTCP.port
 	);
-	
-	if(!config.remoteMusicDirs) break getRemoteDirs;
-	console.log("load songs from remote ...");
-	
+
 	const promises=[];
 	let playerStarted=false;
 	let downloadCounter=0;
 	let downloadSuccessCounter=0;
+	let downloading=[];
 
 	for(const dir of config.remoteMusicDirs){
-		console.log(dir);
 		const promise=tcp.listFiles(
 			dir,
 			config.allowedFileTypes
@@ -146,7 +194,9 @@ getRemoteDirs:{
 					});
 				}
 				else{
+					downloading.push(file);
 					const data=await tcp.getFile(file);
+					downloading=downloading.filter(item=>item!==file);
 					downloadSuccessCounter+=1;
 					const entry=createCache({
 						path: data.path,
@@ -167,12 +217,15 @@ getRemoteDirs:{
 
 	const fn=()=>{
 		if(downloadCounter===0) return;
-		process.stdout.write(`\r${downloadSuccessCounter}/${downloadCounter} Wurden Heruntergeladen ...`);
-		if(downloadCounter!==downloadSuccessCounter) setTimeout(fn,500);
-		else console.log("\nDownloading Finished!\n");
+		process.stdout.write(`\r${downloadSuccessCounter}/${downloadCounter} heruntergeladen, ${downloading.length}`);
+		if(downloadCounter!==downloadSuccessCounter) setTimeout(fn,250);
+		else{
+			console.log("\nDownloading Finished!");
+			tcp.disconnect();
+		}
 	};
 	Promise.all(promises).then(fn);
-}
+};
 
 process.stdin.on("data",data=>{
 	const command=data.toString("utf-8").trim();

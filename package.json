@@ -1,11 +1,9 @@
 {
-	"dependencies": {
-		"audio-player-lib": "git+ssh://git@github.com:LFF5644/audioPlayerLib.git",
-		"socket-tcp": "git+ssh://git@github.com:LFF5644/socketTCP.git"
-	},
 	"name": "musik-player",
 	"description": "Linux - NodeJS: `sudo apt install nodejs` - MPlayer: `sudo apt install mplayer` - NPM `sudo apt install npm`",
 	"version": "1.1.0",
+	"author": "LFF5644",
+	"license": "ISC",
 	"main": "main.js",
 	"scripts": {
 		"install": "sudo apt install screen mplayer",
@@ -15,12 +13,15 @@
 		"stop": "screen -X -S musikPlayer quit",
 		"update": "git pull; npm update"
 	},
+	"dependencies": {
+		"audio-player-lib": "git+ssh://git@github.com:LFF5644/audioPlayerLib.git",
+		"socket-tcp": "git+ssh://git@github.com:LFF5644/socketTCP.git",
+		"directory-tools": "git+ssh://git@github.com:LFF5644/directory-tools.git"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/LFF5644/MusikPlayer.git"
 	},
-	"author": "LFF5644",
-	"license": "ISC",
 	"bugs": {
 		"url": "https://github.com/LFF5644/MusikPlayer/issues"
 	},
