@@ -16,4 +16,4 @@ Nach der installation `npm install` eingeben um alle libs zu downloaden die ben√
 - zum stoppen `npm stop` oder `npm run stop` eingeben
 - auf neueste version updaten `npm run update`
 - anzeigen aller Scripte `package.json` √∂ffnen und unter Scripts gucken oder `npm run` eingeben
-- if you don't want to install screen use `node main.js`
+- if you don't want to install screen use `node main.js` to start
