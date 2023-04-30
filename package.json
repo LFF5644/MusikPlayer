@@ -8,7 +8,12 @@
 	"version": "1.1.0",
 	"main": "main.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"install": "sudo apt install screen mplayer",
+		"start": "screen -S musikPlayer node main.js",
+		"start-hidden": "screen -dmS musikPlayer node main.js",
+		"show-console": "screen -dr musikPlayer",
+		"stop": "screen -X -S musikPlayer quit",
+		"update": "git pull; npm update"
 	},
 	"repository": {
 		"type": "git",
