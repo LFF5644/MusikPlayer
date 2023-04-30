@@ -117,7 +117,7 @@ getRemoteDirs:{
 			dir,
 			config.allowedFileTypes
 		)
-			.then(files=>{
+			.then(async files=>{
 				console.log(`get ${dir}: ${files.length} files found`);
 				for(const file of files){
 					if(existCache(file)){
@@ -131,26 +131,16 @@ getRemoteDirs:{
 					}
 					else{
 						console.log(`load file ${file} ... from server`);
-						tcp.getFile(file)
-							.then(data=>{
-								const entry=createCache({
-									path: data.path,
-									buffer: data.buffer,
-								});
-								console.log(`loaded file ${file}`);
-								player.addTrack({
-									src: entry.cacheFile,
-									name: getFileName(entry.path),
-								});
-							})
-							.catch(entry=>{
-								if(!entry.path||!entry.file){
-									console.log(entry);
-									process.exit(1);
-								}
-								console.log(`cant get file ${entry.path}`);
-								process.exit(1);
-							});
+						const data=await tcp.getFile(file);
+						const entry=createCache({
+							path: data.path,
+							buffer: data.buffer,
+						});
+						console.log(`loaded file ${file}`);
+						player.addTrack({
+							src: entry.cacheFile,
+							name: getFileName(entry.path),
+						});
 					}
 				}
 			})
