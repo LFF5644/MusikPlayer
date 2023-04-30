@@ -111,6 +111,7 @@ getRemoteDirs:{
 		config.socketTCP.host,
 		config.socketTCP.port
 	);
+	let playerStarted=false;
 	for(const dir of config.remoteMusicDirs){
 		console.log(dir);
 		tcp.listFiles(
@@ -142,10 +143,13 @@ getRemoteDirs:{
 							name: getFileName(entry.path),
 						});
 					}
+					if(!playerStarted){
+						playerStarted=true;
+						player.play();
+					}
 				}
 			})
 	}
-	setTimeout(player.play,3e3);
 }
 
 process.stdin.on("data",data=>{
