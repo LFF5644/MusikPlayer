@@ -70,12 +70,18 @@ readConf:{
 		fs.writeFileSync(
 			config_path,
 			JSON.stringify({
+				playback:{
+					repeat: "all",	// nothing = no repeat, all = repeat all, track = repeat track, album = repeat album/folder
+					shuffle_album: true,
+					shuffle_tracks: true,
+					shuffle_tracksWithNumbers: false,
+				},
 				socketTCP:{
-					//use: true,
 					host: "127.0.0.1",
 					port: 59398,
+					use: true,
 				},
-				localFiles:[],
+				localMusicFiles:[],
 				localMusicDirs:[
 					platform==="windows"?process.env.USERPROFILE+"\\Music":"/home/"+process.env.USER+"/Music/",
 				],
