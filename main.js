@@ -60,6 +60,43 @@ function getFileName(path){
 		.pop()
 		.split(".")[0]
 }
+function addTrack(path,isAlbum){
+	const entry=getCacheEntry(path);
+	const src=entry.cacheFile;
+	const name=getFileName(path);
+	
+	let album=null;
+	let discNumber=null;
+	let trackNumber=null;
+
+	if(isAlbum){
+		const trackNumberLength=(name
+			.split("")
+			.findIndex(item=>item===" ")
+		);
+		const trackNumberIsNaN=Number(name.substring(0,trackNumberLength));
+		if(!isNaN(trackNumberIsNaN)) trackNumber=trackNumberIsNaN;
+
+		const splitPath=path.split("/");
+		const pathLength=splitPath.length-1;
+		if(splitPath[pathLength-1].startsWith("CD")) discNumber=Number(splitPath[pathLength-1].substring(2));
+		if(isNaN(discNumber)) discNumber=null;
+		
+		if(discNumber){
+			album=splitPath[pathLength-2];
+		}
+		else if(!discNumber){
+			album=splitPath[pathLength-1];
+		}
+	}
+	player.addTrack({
+		album,
+		discNumber,
+		name,
+		src,
+		trackNumber,
+	});
+}
 
 let config;
 readConf:{
@@ -175,7 +212,19 @@ getRemoteDirs:{
 	let downloadSuccessCounter=0;
 	let downloading=[];
 
-	for(const dir of config.remoteMusicDirs){
+	for(let dir of config.remoteMusicDirs){
+		let isAlbum=false;
+		if(dir.startsWith("!")){
+			if(dir.startsWith("!album")){
+				isAlbum=true;
+			}
+			const endCommand=(dir
+				.split("")
+				.findIndex(item=>item===" ")
+				+1
+			);
+			dir=dir.substring(endCommand);
+		}
 		const promise=tcp.listFiles(
 			dir,
 			config.allowedFileTypes
@@ -192,26 +241,18 @@ getRemoteDirs:{
 
 			for(const file of files){
 				if(existCache(file)){
-					const entry=getCacheEntry(file);
-
-					player.addTrack({
-						src: entry.cacheFile,
-						name: getFileName(entry.path),
-					});
+					addTrack(file,isAlbum);
 				}
 				else{
 					downloading.push(file);
 					const data=await tcp.getFile(file);
 					downloading=downloading.filter(item=>item!==file);
 					downloadSuccessCounter+=1;
-					const entry=createCache({
+					createCache({
 						path: data.path,
 						buffer: data.buffer,
 					});
-					player.addTrack({
-						src: entry.cacheFile,
-						name: getFileName(entry.path),
-					});
+					addTrack(data.path,isAlbum);
 				}
 				if(!playerStarted){
 					playerStarted=true;
@@ -238,9 +279,37 @@ process.stdin.on("data",data=>{
 	if(command==="stop") player.stop();
 	else if(command==="pause") player.pause();
 	else if(command==="skip") player.nextTrack();
-	else if(command==="play") player.play();
+	else if(command.startsWith("play")){
+		const json=command.substring(command
+			.split("")
+			.findIndex(item=>item===" ")
+			+1
+		);
+		try{
+			const object=JSON.parse(json);
+			player.play(object);
+		}catch(e){
+			console.log("use with no args!");
+			player.play();
+		}
+	}
 	else if(command==="exit") process.exit(0);
 	else if(command==="list cache length") console.log(cacheIndex.length);
 	else if(command==="list cache") console.log(cacheIndex);
+	else if(command.startsWith("eval")){
+		const code=command.substring(command
+			.split("")
+			.findIndex(item=>item===" ")
+			+1
+		);
+		try{
+			console.log(eval(code));
+		}catch(e){
+			console.log("--- eval error ---");
+			console.log(e);
+			console.log("--- x ---");
+		}
+	}
+	else if(command==="info") console.log(player.getPlayerKey("tracks")[player.getPlayerKey("trackIndex")])
 	else console.log("command not found!");
 });
