@@ -147,7 +147,10 @@ readCacheIndex:{
 	}
 };
 
-const player=audioPlayerLib.createPlayer();
+const player=audioPlayerLib.createPlayer({
+	playback: config.playback.repeat,
+	socketPort: 4561,
+});
 
 getLocalFiles:{
 	let localFiles=[];
